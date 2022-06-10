@@ -1,5 +1,7 @@
 # Library Management System - Object-oriented Programming Final Project
-Comprehensive library management system written in pure Java.
+Comprehensive library management system written in pure Java for OOP under Mr. Jude Martinez.
+
+Alysha Maulidina - 2502005906
 
 Video demonstration: TBA
 
