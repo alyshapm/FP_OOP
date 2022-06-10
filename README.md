@@ -7,3 +7,4 @@ Video demonstration: TBA
 ```
 git clone https://github.com/alyshapm/FP_OOP
 ```
+Run file on any IDE, such as NetBeans.
