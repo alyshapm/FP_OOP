@@ -3,9 +3,6 @@ Comprehensive library management system written in pure Java.
 
 Video demonstration: TBA
 
-## Snippet
-
-
 ## Features
 - Create multiple admin accounts
 - View, add, delete and edit users
