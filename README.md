@@ -5,6 +5,5 @@ Video demonstration:
 
 ## Run this app locally
 ```
-pip install --upgrade streamlit
-streamlit run https://raw.githubusercontent.com/alyshapm/FP-AlgoProg/main/app.py
+git clone https://github.com/alyshapm/FP_OOP
 ```
