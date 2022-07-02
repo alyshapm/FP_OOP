@@ -1,8 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package jframe;
+
+import java.util.Date;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -13,9 +18,88 @@ public class ViewAllRecord extends javax.swing.JFrame {
     /**
      * Creates new form ViewAllRecord
      */
+    DefaultTableModel model;
+    
     public ViewAllRecord() {
         initComponents();
+        displaySummary();
     }
+    
+    // display book data into table
+    public void displaySummary(){
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/library_ms?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", "root", "");
+            Statement st = con.createStatement();
+            ResultSet rs = st.executeQuery("select * from issue_book_details");
+            
+            while(rs.next()){
+                String id = rs.getString("id");
+                String bookName = rs.getString("book_name");
+                String studentName = rs.getString("student_name");
+                String issueDate = rs.getString("issue_date");
+                String dueDate = rs.getString("due_date");
+                String status = rs.getString("status");
+                
+                Object[] obj = {id, bookName, studentName, issueDate, dueDate, status};
+                model =(DefaultTableModel) tbl_summary.getModel(); // create a model which creates a row 
+                model.addRow(obj);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    // clear table -- used to display table when new information is added
+    public void clearTable(){
+        DefaultTableModel model = (DefaultTableModel) tbl_summary.getModel();
+        model.setRowCount(0);
+    }
+    
+     // fetch record using date fields
+    public void search(){
+        // first, convert util date format to sql date format
+        Date uFromDate = date_fromDate.getDatoFecha();
+        Date uToDate = date_toDate.getDatoFecha();
+        
+        long a = uFromDate.getTime();
+        long b = uToDate.getTime();
+        
+        java.sql.Date fromDate = new java.sql.Date(a);
+        java.sql.Date toDate = new java.sql.Date(b);
+        
+        try {
+            Connection con = DBConnection.getConnection();
+            String sql = "select * from issue_book_details where issue_date BETWEEN ? and ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setDate(1, fromDate);
+            pst.setDate(2, toDate);
+            
+            //select query 
+            ResultSet rs = pst.executeQuery();
+            
+            if(rs.next() == false) {
+                JOptionPane.showMessageDialog(this, "No record found!");
+            } else {
+                while(rs.next()){
+                    String id = rs.getString("id");
+                    String bookName = rs.getString("book_name");
+                    String studentName = rs.getString("student_name");
+                    String issueDate = rs.getString("issue_date");
+                    String dueDate = rs.getString("due_date");
+                    String status = rs.getString("status");
+
+                    Object[] obj = {id, bookName, studentName, issueDate, dueDate, status};
+                    model =(DefaultTableModel) tbl_summary.getModel(); // create a model which creates a row 
+                    model.addRow(obj);
+                }
+            }
+            
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -26,21 +110,149 @@ public class ViewAllRecord extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        evaluatorLine2D1 = new org.jdesktop.swing.animation.timing.evaluators.EvaluatorLine2D();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        date_fromDate = new rojeru_san.componentes.RSDateChooser();
+        jLabel12 = new javax.swing.JLabel();
+        date_toDate = new rojeru_san.componentes.RSDateChooser();
+        rSButtonHover1 = new rojerusan.RSButtonHover();
+        jLabel1 = new javax.swing.JLabel();
+        rSButtonHover3 = new rojerusan.RSButtonHover();
+        jPanel2 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tbl_summary = new rojeru_san.complementos.RSTableMetro();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        jPanel1.setBackground(new java.awt.Color(102, 102, 255));
+        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        pack();
+        jLabel2.setFont(new java.awt.Font("Helvetica Neue", 1, 24)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setText("View summary");
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 40, -1, -1));
+
+        jLabel11.setFont(new java.awt.Font("Helvetica Neue", 0, 16)); // NOI18N
+        jLabel11.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel11.setText("From:");
+        jPanel1.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 120, -1, -1));
+
+        date_fromDate.setFuente(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
+        date_fromDate.setPlaceholder("Select date");
+        jPanel1.add(date_fromDate, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 160, 350, -1));
+
+        jLabel12.setFont(new java.awt.Font("Helvetica Neue", 0, 16)); // NOI18N
+        jLabel12.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel12.setText("To:");
+        jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 120, -1, -1));
+
+        date_toDate.setFuente(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
+        date_toDate.setPlaceholder("Select date");
+        jPanel1.add(date_toDate, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 160, 350, -1));
+
+        rSButtonHover1.setText("Search");
+        rSButtonHover1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rSButtonHover1ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(rSButtonHover1, new org.netbeans.lib.awtextra.AbsoluteConstraints(860, 160, 90, -1));
+
+        jLabel1.setFont(new java.awt.Font("Helvetica Neue", 1, 18)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel1.setText("Back");
+        jLabel1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel1MouseClicked(evt);
+            }
+        });
+        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 20, -1, -1));
+
+        rSButtonHover3.setText("Clear");
+        rSButtonHover3.setToolTipText("");
+        rSButtonHover3.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                rSButtonHover3MouseClicked(evt);
+            }
+        });
+        rSButtonHover3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rSButtonHover3ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(rSButtonHover3, new org.netbeans.lib.awtextra.AbsoluteConstraints(970, 160, 90, -1));
+
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1200, 250));
+
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jScrollPane2.setFont(new java.awt.Font("Helvetica Neue", 0, 12)); // NOI18N
+
+        tbl_summary.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "ID", "Book name", "Student name", "Issue date", "Due date", "Status"
+            }
+        ));
+        tbl_summary.setColorBackgoundHead(new java.awt.Color(102, 102, 255));
+        tbl_summary.setColorFilasBackgound2(new java.awt.Color(255, 255, 255));
+        tbl_summary.setColorFilasForeground1(new java.awt.Color(0, 0, 0));
+        tbl_summary.setColorFilasForeground2(new java.awt.Color(0, 0, 0));
+        tbl_summary.setFont(new java.awt.Font("Helvetica Neue", 0, 12)); // NOI18N
+        tbl_summary.setFuenteFilas(new java.awt.Font("Helvetica Neue", 0, 12)); // NOI18N
+        tbl_summary.setFuenteFilasSelect(new java.awt.Font("Helvetica Neue", 1, 14)); // NOI18N
+        tbl_summary.setFuenteHead(new java.awt.Font("Helvetica Neue", 1, 14)); // NOI18N
+        tbl_summary.setRowHeight(40);
+        tbl_summary.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbl_summaryMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(tbl_summary);
+
+        jPanel2.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 40, 1020, 470));
+
+        getContentPane().add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 250, 1200, 560));
+
+        setBounds(0, 0, 1200, 825);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void rSButtonHover1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rSButtonHover1ActionPerformed
+        // if user does not select any dates, display all data
+        if (date_fromDate.getDatoFecha() != null & date_toDate.getDatoFecha() != null){
+            clearTable(); // removes duplication
+            search();
+        } else {
+            JOptionPane.showMessageDialog(this, "Select a date!");
+        }
+        
+    }//GEN-LAST:event_rSButtonHover1ActionPerformed
+
+    private void tbl_summaryMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbl_summaryMouseClicked
+      
+    }//GEN-LAST:event_tbl_summaryMouseClicked
+
+    private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
+        Homepage home = new Homepage();
+        home.setVisible(true);
+        dispose();
+    }//GEN-LAST:event_jLabel1MouseClicked
+
+    private void rSButtonHover3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rSButtonHover3ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rSButtonHover3ActionPerformed
+
+    private void rSButtonHover3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rSButtonHover3MouseClicked
+        clearTable();
+        displaySummary();
+    }//GEN-LAST:event_rSButtonHover3MouseClicked
 
     /**
      * @param args the command line arguments
@@ -78,5 +290,18 @@ public class ViewAllRecord extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private rojeru_san.componentes.RSDateChooser date_fromDate;
+    private rojeru_san.componentes.RSDateChooser date_toDate;
+    private org.jdesktop.swing.animation.timing.evaluators.EvaluatorLine2D evaluatorLine2D1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane2;
+    private rojerusan.RSButtonHover rSButtonHover1;
+    private rojerusan.RSButtonHover rSButtonHover3;
+    private rojeru_san.complementos.RSTableMetro tbl_summary;
     // End of variables declaration//GEN-END:variables
 }

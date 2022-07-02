@@ -4,6 +4,10 @@
  */
 package jframe;
 
+import java.sql.*;
+import java.util.Date;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author alyshapm
@@ -15,6 +19,147 @@ public class IssueBook extends javax.swing.JFrame {
      */
     public IssueBook() {
         initComponents();
+    }
+    
+    // fetch book details from database and displays it on the panel
+    public void getBookDetails(){
+        int bookId = Integer.parseInt(txt_bookId.getText());
+        
+        try {
+            Connection con = DBConnection.getConnection();
+            PreparedStatement pst = con.prepareStatement("select * from book_details where book_id = ?");
+            pst.setInt(1, bookId);
+            ResultSet rs = pst.executeQuery();
+            
+            // iterate through all the information and display
+            if(rs.next()){
+                lbl_bookId.setText(rs.getString("book_id"));
+                lbl_bookName.setText(rs.getString("book_name"));
+                lbl_author.setText(rs.getString("author"));
+                lbl_quantity.setText(rs.getString("quantity"));
+            } else {
+                lbl_bookError.setText("Invalid book ID!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+    }
+    
+    // fetch student details from database and displays it on the panel
+    public void getStudentDetails(){
+        int studentId = Integer.parseInt(txt_studentId.getText());
+        
+        try {
+            Connection con = DBConnection.getConnection();
+            PreparedStatement pst = con.prepareStatement("select * from student_details where student_id = ?");
+            pst.setInt(1, studentId);
+            ResultSet rs = pst.executeQuery();
+            
+            // iterate through all the information and display
+            if(rs.next()){
+                lbl_studentId.setText(rs.getString("student_id"));
+                lbl_studentName.setText(rs.getString("name"));
+                lbl_course.setText(rs.getString("course"));
+                lbl_branch.setText(rs.getString("branch"));
+            } else {
+                lbl_studentError.setText("Invalid student ID!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+    }
+    
+    // insert issue book details to database
+    public boolean issueBook(){
+        boolean isIssued = false;
+        int bookId = Integer.parseInt(txt_bookId.getText());
+        int studentId = Integer.parseInt(txt_studentId.getText());
+        String bookName = lbl_bookName.getText();
+        String studentName = lbl_studentName.getText();
+        
+        Date uIssueDate = date_issueDate.getDatoFecha();
+        Date uDueDate = date_dueDate.getDatoFecha();
+        
+        // changes java date to sql date format
+        Long l1 = uIssueDate.getTime();
+        Long l2 = uDueDate.getTime();
+        java.sql.Date sIssueDate = new java.sql.Date(l1);
+        java.sql.Date sDueDate = new java.sql.Date(l2);
+        
+        try {
+            Connection con = DBConnection.getConnection();
+            String sql = "insert into issue_book_details(book_id, book_name, student_id, student_name, issue_date, due_date, status) values (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, bookId);
+            pst.setString(2, bookName);
+            pst.setInt(3, studentId);
+            pst.setString(4, studentName);
+            pst.setDate(5, sIssueDate);
+            pst.setDate(6, sDueDate);
+            pst.setString(7, "pending");
+            
+            int rowCount = pst.executeUpdate();
+            if (rowCount > 0){
+                isIssued = true;
+            } else {
+                isIssued = false;
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return isIssued;
+    }
+    
+    // updating book count i.e. when a book is borrowed, quantity - 1
+    public void updateBookCount(){
+        int bookId = Integer.parseInt(txt_bookId.getText());
+        try {
+            Connection con = DBConnection.getConnection();
+            String sql = "update book_details set quantity = quantity - 1 where book_id = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, bookId);
+            
+            int rowCount = pst.executeUpdate();
+            if (rowCount > 0){
+                JOptionPane.showMessageDialog(this, "Book count updated!");
+                int initialCount = Integer.parseInt(lbl_quantity.getText()); // updates the display
+                lbl_quantity.setText(Integer.toString(initialCount - 1));
+            } else {
+                JOptionPane.showMessageDialog(this, "Count update failed!");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    // validate duplication - checks if book has been allocated or not
+    public boolean alreadyIssued(){
+        boolean alreadyIssued = false;
+        int bookId = Integer.parseInt(txt_bookId.getText());
+        int studentId = Integer.parseInt(txt_studentId.getText());
+        
+        try {
+            Connection con = DBConnection.getConnection();
+            String sql = "select * from issue_book_details where book_id = ? and student_id = ? and status = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, bookId);
+            pst.setInt(2, studentId);
+            pst.setString(3, "pending");
+            
+            ResultSet rs = pst.executeQuery();
+            if(rs.next()){
+                alreadyIssued = true;
+            } else {
+                alreadyIssued = false;
+            }
+            
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return alreadyIssued;
     }
 
     /**
@@ -30,27 +175,28 @@ public class IssueBook extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         lbl_quantity = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         lbl_bookId = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        kbk_bookName = new javax.swing.JLabel();
+        lbl_bookName = new javax.swing.JLabel();
         lbl_author = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        lbl_branch = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
-        lbl_course = new javax.swing.JLabel();
-        lbl_studentId = new javax.swing.JLabel();
-        jLabel17 = new javax.swing.JLabel();
-        lbl_studentName = new javax.swing.JLabel();
-        jLabel19 = new javax.swing.JLabel();
-        jLabel20 = new javax.swing.JLabel();
-        jLabel21 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
+        lbl_bookError = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        branchjlabel = new javax.swing.JLabel();
+        lbl_branch = new javax.swing.JLabel();
+        coursejlabel = new javax.swing.JLabel();
+        lbl_course = new javax.swing.JLabel();
+        jlabel = new javax.swing.JLabel();
+        lbl_studentId = new javax.swing.JLabel();
+        jlabel1 = new javax.swing.JLabel();
+        lbl_studentName = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        lbl_studentError = new javax.swing.JLabel();
         txt_bookId = new app.bolivia.swing.JCTextField();
         jLabel8 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
@@ -86,11 +232,6 @@ public class IssueBook extends javax.swing.JFrame {
         jLabel2.setText("Book details");
         jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 130, -1, -1));
 
-        jLabel3.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel3.setText("Quantity:");
-        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 470, -1, 20));
-
         lbl_quantity.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
         lbl_quantity.setForeground(new java.awt.Color(255, 255, 255));
         jPanel1.add(lbl_quantity, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 460, 110, 30));
@@ -118,73 +259,81 @@ public class IssueBook extends javax.swing.JFrame {
         jLabel10.setForeground(new java.awt.Color(255, 255, 255));
         jPanel1.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 240, 110, 30));
 
-        kbk_bookName.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
-        kbk_bookName.setForeground(new java.awt.Color(255, 255, 255));
-        jPanel1.add(kbk_bookName, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 310, 110, 30));
+        lbl_bookName.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        lbl_bookName.setForeground(new java.awt.Color(255, 255, 255));
+        jPanel1.add(lbl_bookName, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 310, 110, 30));
 
         lbl_author.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
         lbl_author.setForeground(new java.awt.Color(255, 255, 255));
         jPanel1.add(lbl_author, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 390, 110, 30));
 
-        panel_main.add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 420, 810));
-
-        jPanel2.setBackground(new java.awt.Color(102, 153, 255));
-        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        lbl_branch.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
-        lbl_branch.setForeground(new java.awt.Color(255, 255, 255));
-        lbl_branch.setText("Branch:");
-        jPanel2.add(lbl_branch, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 470, -1, 20));
-
         jLabel14.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
         jLabel14.setForeground(new java.awt.Color(255, 255, 255));
-        jPanel2.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 460, 110, 30));
+        jLabel14.setText("Quantity:");
+        jPanel1.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 470, -1, 20));
 
-        lbl_course.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
-        lbl_course.setForeground(new java.awt.Color(255, 255, 255));
-        lbl_course.setText("Course:");
-        jPanel2.add(lbl_course, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 400, -1, -1));
+        lbl_bookError.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        lbl_bookError.setForeground(new java.awt.Color(255, 204, 102));
+        jPanel1.add(lbl_bookError, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 520, 240, 40));
 
-        lbl_studentId.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
-        lbl_studentId.setForeground(new java.awt.Color(255, 255, 255));
-        lbl_studentId.setText("Student ID:");
-        jPanel2.add(lbl_studentId, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 240, -1, -1));
-
-        jLabel17.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
-        jLabel17.setForeground(new java.awt.Color(255, 255, 255));
-        jPanel2.add(jLabel17, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 230, 120, 30));
-
-        lbl_studentName.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
-        lbl_studentName.setForeground(new java.awt.Color(255, 255, 255));
-        lbl_studentName.setText("Name:");
-        jPanel2.add(lbl_studentName, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 320, -1, -1));
-
-        jLabel19.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
-        jLabel19.setForeground(new java.awt.Color(255, 255, 255));
-        jPanel2.add(jLabel19, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 240, 110, 30));
-
-        jLabel20.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
-        jLabel20.setForeground(new java.awt.Color(255, 255, 255));
-        jPanel2.add(jLabel20, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 310, 110, 30));
-
-        jLabel21.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
-        jLabel21.setForeground(new java.awt.Color(255, 255, 255));
-        jPanel2.add(jLabel21, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 390, 110, 30));
-
-        jLabel5.setFont(new java.awt.Font("Helvetica Neue", 1, 24)); // NOI18N
-        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel5.setText("Student details");
-        jPanel2.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 130, -1, -1));
-
-        panel_main.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 0, 420, 810));
+        panel_main.add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 420, 810));
 
         jLabel4.setFont(new java.awt.Font("Helvetica Neue", 1, 24)); // NOI18N
         jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/adminIcons/icons8_View_Details_26px.png"))); // NOI18N
         jLabel4.setText("Issue Book");
         panel_main.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(1060, 130, -1, -1));
 
+        jPanel2.setBackground(new java.awt.Color(102, 153, 255));
+        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        branchjlabel.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        branchjlabel.setForeground(new java.awt.Color(255, 255, 255));
+        branchjlabel.setText("Branch:");
+        jPanel2.add(branchjlabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 470, -1, 20));
+
+        lbl_branch.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        lbl_branch.setForeground(new java.awt.Color(255, 255, 255));
+        jPanel2.add(lbl_branch, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 460, 110, 30));
+
+        coursejlabel.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        coursejlabel.setForeground(new java.awt.Color(255, 255, 255));
+        coursejlabel.setText("Course:");
+        jPanel2.add(coursejlabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 400, -1, -1));
+
+        lbl_course.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        lbl_course.setForeground(new java.awt.Color(255, 255, 255));
+        jPanel2.add(lbl_course, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 390, 110, 40));
+
+        jlabel.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        jlabel.setForeground(new java.awt.Color(255, 255, 255));
+        jlabel.setText("Student ID:");
+        jPanel2.add(jlabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 240, -1, -1));
+
+        lbl_studentId.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        lbl_studentId.setForeground(new java.awt.Color(255, 255, 255));
+        jPanel2.add(lbl_studentId, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 230, 120, 30));
+
+        jlabel1.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        jlabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jlabel1.setText("Name:");
+        jPanel2.add(jlabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 320, -1, -1));
+
+        lbl_studentName.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        lbl_studentName.setForeground(new java.awt.Color(255, 255, 255));
+        jPanel2.add(lbl_studentName, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 310, 110, 30));
+
+        jLabel5.setFont(new java.awt.Font("Helvetica Neue", 1, 24)); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel5.setText("Student details");
+        jPanel2.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 130, -1, -1));
+
+        lbl_studentError.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        lbl_studentError.setForeground(new java.awt.Color(255, 204, 102));
+        jPanel2.add(lbl_studentError, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 520, 240, 40));
+
+        panel_main.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 0, 420, 810));
+
         txt_bookId.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
-        txt_bookId.setForeground(new java.awt.Color(255, 255, 255));
         txt_bookId.setPlaceholder("Enter book ID...");
         txt_bookId.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -204,7 +353,6 @@ public class IssueBook extends javax.swing.JFrame {
         panel_main.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(970, 400, -1, -1));
 
         txt_studentId.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
-        txt_studentId.setForeground(new java.awt.Color(255, 255, 255));
         txt_studentId.setPlaceholder("Enter student ID...");
         txt_studentId.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -247,23 +395,40 @@ public class IssueBook extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
-        Homepage home = new Homepage();
+        Homepage home = new Homepage(); // open new homepage page
         home.setVisible(true);
-        dispose();
+        dispose(); // close current page
     }//GEN-LAST:event_jLabel1MouseClicked
 
     private void txt_bookIdFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txt_bookIdFocusLost
-        //        if (checkDuplicateUser() == true) { // if username already exists, prompt error message
-            //            JOptionPane.showMessageDialog(this, "Username already exists");
-            //        }
+        // checks if field is empty
+        if (!txt_bookId.getText().equals("")){
+            getBookDetails();
+        }
     }//GEN-LAST:event_txt_bookIdFocusLost
 
     private void txt_studentIdFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txt_studentIdFocusLost
-        // TODO add your handling code here:
+        // checks if field is empty
+        if (!txt_studentId.getText().equals("")){
+            getStudentDetails();
+        }
     }//GEN-LAST:event_txt_studentIdFocusLost
 
     private void rSMaterialButtonRectangle2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rSMaterialButtonRectangle2ActionPerformed
-        
+        if (lbl_quantity.getText().equals("0")) {
+            JOptionPane.showMessageDialog(this, "Book is not available!");
+        } else {
+            if (alreadyIssued() == false){
+                if (issueBook() == true){
+                    JOptionPane.showMessageDialog(this, "Book issued successfully!");
+                    updateBookCount();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Book issue failed!");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Book has been issued already!");
+            }
+        }
     }//GEN-LAST:event_rSMaterialButtonRectangle2ActionPerformed
 
     /**
@@ -302,6 +467,8 @@ public class IssueBook extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel branchjlabel;
+    private javax.swing.JLabel coursejlabel;
     private rojeru_san.componentes.RSDateChooser date_dueDate;
     private rojeru_san.componentes.RSDateChooser date_issueDate;
     private javax.swing.JLabel jLabel1;
@@ -310,12 +477,7 @@ public class IssueBook extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel20;
-    private javax.swing.JLabel jLabel21;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -324,12 +486,16 @@ public class IssueBook extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JLabel kbk_bookName;
+    private javax.swing.JLabel jlabel;
+    private javax.swing.JLabel jlabel1;
     private javax.swing.JLabel lbl_author;
+    private javax.swing.JLabel lbl_bookError;
     private javax.swing.JLabel lbl_bookId;
+    private javax.swing.JLabel lbl_bookName;
     private javax.swing.JLabel lbl_branch;
     private javax.swing.JLabel lbl_course;
     private javax.swing.JLabel lbl_quantity;
+    private javax.swing.JLabel lbl_studentError;
     private javax.swing.JLabel lbl_studentId;
     private javax.swing.JLabel lbl_studentName;
     private javax.swing.JPanel panel_main;

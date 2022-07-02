@@ -1,9 +1,10 @@
 package jframe;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 import javax.swing.table.DefaultTableModel;
 
 /*
@@ -15,25 +16,32 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author alyshapm
  */
-public class IssueBookDetails extends javax.swing.JFrame {
+public class OverdueList extends javax.swing.JFrame {
 
     /**
      * Creates new form IssueBookDetails
      */
     DefaultTableModel model;
     
-    public IssueBookDetails() {
+    public OverdueList() {
         initComponents();
         displaySummary();
     }
     
     // display book data into table
     public void displaySummary(){
+        // get current date
+        long l = System.currentTimeMillis();
+        Date today = new Date(l);
+        
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/library_ms?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", "root", "");
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery("select * from issue_book_details where status = '"+"pending"+"'");
+            PreparedStatement pst = con.prepareStatement("select * from issue_book_details where due_date < ? and status = ?");
+            pst.setDate(1, today);
+            pst.setString(2, "pending");
+            
+            ResultSet rs = pst.executeQuery();
             
             while(rs.next()){
                 String id = rs.getString("id");
@@ -75,7 +83,7 @@ public class IssueBookDetails extends javax.swing.JFrame {
 
         jLabel4.setFont(new java.awt.Font("Helvetica Neue", 1, 24)); // NOI18N
         jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/adminIcons/icons8_View_Details_26px.png"))); // NOI18N
-        jLabel4.setText("Issued Books");
+        jLabel4.setText("Overdue Books");
         jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 60, -1, -1));
 
         jLabel1.setFont(new java.awt.Font("Helvetica Neue", 1, 18)); // NOI18N
@@ -148,20 +156,21 @@ public class IssueBookDetails extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(IssueBookDetails.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(OverdueList.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(IssueBookDetails.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(OverdueList.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(IssueBookDetails.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(OverdueList.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(IssueBookDetails.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(OverdueList.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new IssueBookDetails().setVisible(true);
+                new OverdueList().setVisible(true);
             }
         });
     }
