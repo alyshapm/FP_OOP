@@ -347,6 +347,7 @@ public class Homepage extends javax.swing.JFrame {
         jLabel13.setForeground(new java.awt.Color(153, 153, 153));
         jLabel13.setIcon(new javax.swing.ImageIcon(getClass().getResource("/adminIcons/icons8_Exit_26px_1.png"))); // NOI18N
         jLabel13.setText("Log out");
+        jLabel13.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         jLabel13.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jLabel13MouseClicked(evt);
